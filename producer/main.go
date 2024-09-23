@@ -2,12 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand/v2"
 	"net/http"
-	"time"
+
+	_ "github.com/mattn/go-sqlite3"
+
+	database "github.com/nicoletavoinea/GolangProducerConsumer/database/sqlc"
 	//	"github.com/prometheus/client_golang/prometheus"
 	//	"github.com/prometheus/client_golang/prometheus/promauto"
 	//"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -31,16 +36,40 @@ type task struct {
 }
 
 func generateRandomTask() task {
-	now := time.Now()
+	//now := time.Now()
 
 	var randomTask task
-	randomTask.TaskId = rand.Int32()
 	randomTask.TaskType = int8(rand.IntN(9))
 	randomTask.TaskValue = int8(rand.IntN(99))
 	randomTask.TaskState = RECEIVED
-	randomTask.TaskCreationTime = now.Unix() //secons elapsed since 1970
-	randomTask.TaskLastUpdateTime = randomTask.TaskCreationTime
+	//randomTask.TaskCreationTime = now.Unix() //secons elapsed since 1970
+	//randomTask.TaskLastUpdateTime = randomTask.TaskCreationTime
 	return randomTask
+}
+
+func processAndSend(taskToSend task, queries *database.Queries) {
+	taskToSend, err := addToDatabase(taskToSend, queries)
+	if err != nil {
+		log.Printf("Error inserting task into database: %v\n", err)
+	}
+	sendTask(taskToSend)
+}
+
+func addToDatabase(taskToAdd task, queries *database.Queries) (task, error) {
+
+	taskData, err := queries.AddTask(context.Background(), database.AddTaskParams{
+		Param1: int64(taskToAdd.TaskType),
+		Param2: int64(taskToAdd.TaskValue),
+	})
+
+	if err != nil {
+		log.Printf("Error inserting task: %v\n", err)
+		return taskToAdd, err
+	}
+	taskToAdd.TaskId = int32(taskData.ID)
+	taskToAdd.TaskCreationTime = taskData.Creationtime
+	taskToAdd.TaskLastUpdateTime = taskToAdd.TaskCreationTime
+	return taskToAdd, nil
 }
 
 func sendTask(taskToSend task) {
@@ -62,17 +91,31 @@ func sendTask(taskToSend task) {
 	}
 }
 
-func main() {
-	//http.Handle("/metrics", promhttp.Handler())
-	//http.ListenAndServe(":2112", nil)
+func runSchema(db *sql.DB, schemaFilePath string) error {
+	schema, err := ioutil.ReadFile(schemaFilePath)
+	if err != nil {
+		return err
+	}
 
-	fmt.Println(generateRandomTask())
-	fmt.Println(generateRandomTask())
-	fmt.Println(generateRandomTask())
+	_, err = db.Exec(string(schema))
+	return err
+}
+
+func main() {
+	db, err := sql.Open("sqlite3", "./tasks.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	if err := runSchema(db, "../database/schema.sql"); err != nil {
+		log.Fatalf("Failed to run schema: %v", err)
+	}
+
+	queries := database.New(db)
+
+	//create & send task
 	tosend := generateRandomTask()
-	sendTask(tosend)
-	tosend = generateRandomTask()
-	sendTask(tosend)
-	tosend = generateRandomTask()
-	sendTask(tosend)
+	processAndSend(tosend, queries)
+
 }

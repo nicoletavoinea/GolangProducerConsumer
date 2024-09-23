@@ -42,7 +42,20 @@ func handleTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Received task: %+v", receivedTask)
+	// Update the task state to PROCESSING
+	//receivedTask.taskState = PROCESSING
+	//receivedTask.taskLastUpdateTime = time.Now().Unix()
+	//log.Printf("Processing task: %+v", receivedTask)
 
+	// Simulate task processing by sleeping for a duration based on task value
+	//time.Sleep(time.Duration(receivedTask.taskValue) * time.Millisecond)
+
+	// Update the task state to DONE
+	//receivedTask.taskState = DONE
+	//receivedTask.taskLastUpdateTime = time.Now().Unix()
+	//log.Printf("Completed task: %+v", receivedTask)
+
+	// Respond with a success message
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(receivedTask)
 }
