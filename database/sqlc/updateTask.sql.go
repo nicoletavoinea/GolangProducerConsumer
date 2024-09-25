@@ -12,15 +12,20 @@ import (
 const updateTask = `-- name: UpdateTask :one
 UPDATE tasks
 SET 
-    status='PROCESSING', 
+    state=?1, 
     lastupdatetime = strftime('%s','now')
 WHERE 
-    id=?1
+    id=?2
 RETURNING id, type, value, state, creationtime, lastupdatetime
 `
 
-func (q *Queries) UpdateTask(ctx context.Context, param1 int64) (Task, error) {
-	row := q.db.QueryRowContext(ctx, updateTask, param1)
+type UpdateTaskParams struct {
+	Param2 string
+	Param1 int64
+}
+
+func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {
+	row := q.db.QueryRowContext(ctx, updateTask, arg.Param2, arg.Param1)
 	var i Task
 	err := row.Scan(
 		&i.ID,
