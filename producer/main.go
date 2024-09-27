@@ -1,23 +1,39 @@
 package main
 
 import (
-	"log"
+	//"log"
+
+	"sync"
+	"time"
 
 	functions "github.com/nicoletavoinea/GolangProducerConsumer/functions"
 )
 
-func main() {
+const msgRate = 5
 
+var wg sync.WaitGroup
+
+func main() {
 	//open database & get queries(global var)
 	db := functions.OpenDatabase()
+	functions.CreatePrometheusMetricsTypes()
+	go functions.StartPrometheusServer(":2113")
 
-	log.Println("Icerc sa fac ceva")
-	//create & send task
-	tosend := functions.GenerateRandomTask()
-	log.Println("Trying to send: %v", tosend)
+	//ticker that starts routines having msgRate/second
+	ticker := time.NewTicker(time.Second / msgRate)
+	defer ticker.Stop()
 
-	functions.ProcessAndSendTask(tosend, functions.Queries)
+	//start generating & sending tasks
+	for range ticker.C {
+		// Generate and send the task
+		//log.Println("Goroutine started")
+		go functions.ProcessAndSendTask()
+	}
 
+	//wait for all goroutines to finish
+	wg.Wait()
+
+	//close database
 	functions.CloseDB(db)
 
 }

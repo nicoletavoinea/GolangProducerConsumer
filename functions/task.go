@@ -33,21 +33,26 @@ func GenerateRandomTask() task {
 	}
 }
 
-func ProcessAndSendTask(task task, db *database.Queries) error {
+func ProcessAndSendTask() (task, error) {
+	task := GenerateRandomTask()
+
 	// Add task to database
-	updatedTask, err := AddTaskToDatabase(task, db)
+	updatedTask, err := AddTaskToDatabase(task, Queries)
 	if err != nil {
-		return err
+		return updatedTask, err
 	}
 	log.Println("Task added to db:", updatedTask)
+
+	//update metrics
+	IncreaseTotalTasksAndValue(updatedTask.TaskType, updatedTask.TaskValue)
 
 	// Send task to consumer
 	err = SendTaskToConsumer(updatedTask)
 	if err != nil {
-		return err
+		return updatedTask, err
 	}
 	log.Println("Task sent to consumer:", updatedTask)
-	return nil
+	return updatedTask, nil
 }
 
 func AddTaskToDatabase(task task, db *database.Queries) (task, error) {

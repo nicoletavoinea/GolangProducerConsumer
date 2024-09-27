@@ -11,6 +11,8 @@ import (
 
 func main() {
 	db := functions.OpenDatabase()
+	functions.CreatePrometheusMetricsGeneral()
+	go functions.StartPrometheusServer(":2112")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/task", functions.HandleTask).Methods("POST")

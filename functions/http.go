@@ -27,11 +27,21 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 
 	// Update task state to PROCESSING
 	updatedTask, err := UpdateTaskState(receivedTask.TaskId, PROCESSING)
+	if err != nil {
+		log.Println("Error updating task to PROCESSING :(\n", err)
+	}
+	//IncreaseProcessedTasks()
 	log.Println("Task updated to: ", updatedTask)
+
 	//Sleep fot value miliseconds
 	time.Sleep(time.Duration(receivedTask.TaskValue) * time.Second) //should be miliseconds
-	// Update task state to PROCESSING
+
+	// Update task state to DONE
 	updatedTask, err = UpdateTaskState(receivedTask.TaskId, DONE)
+	if err != nil {
+		log.Println("Error updating task to DONE :(\n", err)
+	}
+	IncreaseDoneTasks()
 	log.Println("Task updated to: ", updatedTask)
 
 	//Ok status

@@ -41,3 +41,18 @@ func CloseDB(db *sql.DB) {
 		log.Fatalf("Error closing database: %v", err)
 	}
 }
+
+/*
+func getNumberOfDoneTasks() float64{
+
+}
+func getNumberOfProcessingTasks() float64 {
+
+}
+func getNumberOfTasksByType() float64{
+
+}
+func getValueOfTasksByType() float64 {
+
+}
+*/
