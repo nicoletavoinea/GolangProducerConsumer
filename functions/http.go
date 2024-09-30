@@ -31,6 +31,7 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error updating task to PROCESSING :(\n", err)
 	}
 	//IncreaseProcessedTasks()
+	IncreaseProcessedTasks()
 	log.Println("Task updated to: ", updatedTask)
 
 	//Sleep fot value miliseconds

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -13,6 +14,8 @@ func main() {
 	db := functions.OpenDatabase()
 	functions.CreatePrometheusMetricsGeneral()
 	go functions.StartPrometheusServer(":2112")
+
+	time.Sleep(time.Duration(10) * time.Second)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/task", functions.HandleTask).Methods("POST")
