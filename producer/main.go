@@ -2,14 +2,13 @@ package main
 
 import (
 	//"log"
-
 	"sync"
 	"time"
 
 	functions "github.com/nicoletavoinea/GolangProducerConsumer/functions"
 )
 
-const msgRate = 5
+const msgRate = 5 //message sending rate (messages/second)
 
 var wg sync.WaitGroup
 
@@ -19,8 +18,10 @@ func main() {
 	functions.CreatePrometheusMetricsTypes()
 	go functions.StartPrometheusServer(":2113")
 
+	//10 s before starts generating tasks
 	time.Sleep(time.Duration(10) * time.Second)
 
+	//generate tasks for 75s
 	timeout := time.After(75 * time.Second)
 
 	//ticker that starts routines having msgRate/second
@@ -36,15 +37,12 @@ func main() {
 				functions.ProcessAndSendTask()
 			}()
 
-		case <-timeout: // Triggers after 1 minute
-			//wait for all goroutines to finish
-			ticker.Stop() // Stop the ticker
-			wg.Wait()
-			functions.CloseDB(db)
+		case <-timeout: // Triggers after timeout elapses
+			ticker.Stop()         // Stop the ticker
+			wg.Wait()             //wait for all goroutines to finish
+			functions.CloseDB(db) //close database
 
 		}
 	}
-
-	//close database
 
 }

@@ -22,7 +22,7 @@ type task struct {
 	TaskLastUpdateTime int64      `json:"lastupdatetime"`
 }
 
-func GenerateRandomTask() task {
+func GenerateRandomTask() task { //generate random values for type & value fields
 	return task{
 		TaskType:  int8(rand.Intn(10)),
 		TaskValue: int8(rand.Intn(100)),
@@ -30,7 +30,7 @@ func GenerateRandomTask() task {
 	}
 }
 
-func ProcessAndSendTask() (task, error) {
+func ProcessAndSendTask() (task, error) { //add to database -> increase metrics -> send to consumer
 	task := GenerateRandomTask()
 
 	// Add task to database

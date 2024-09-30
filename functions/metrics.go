@@ -41,6 +41,7 @@ func CreatePrometheusMetricsGeneral() {
 		},
 	)
 
+	//set to initial values, computed from database
 	processed.Set(getNumberOfProcessingTasks())
 	done.Set(getNumberOfDoneTasks())
 
@@ -90,13 +91,13 @@ func CreatePrometheusMetricsTypes() {
 	}
 }
 
-func IncreaseProcessedTasks() {
+func IncreaseProcessedTasks() { //increment number of processing tasks
 	mu.Lock()
 	myGeneralMetrics.ProcessedTasks.Inc()
 	mu.Unlock()
 }
 
-func IncreaseDoneTasks() {
+func IncreaseDoneTasks() { //increment number of done tasks
 	mu.Lock()
 	myGeneralMetrics.ProcessedTasks.Dec()
 	mu.Unlock()
@@ -105,15 +106,15 @@ func IncreaseDoneTasks() {
 	mu1.Unlock()
 }
 
-func IncreaseTotalTasksAndValue(taskType int8, taskValue int8) {
+func IncreaseTotalTasksAndValue(taskType int8, taskValue int8) { //increment number of tasks per task type & their values
 	mu2.Lock()
 	myTypesMetrics.TotalTasks.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Inc()
 	myTypesMetrics.TotalValues.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Add(float64(taskValue))
 	mu2.Unlock()
 }
 
-func StartPrometheusServer(addr string) {
+func StartPrometheusServer(addr string) { //startprometheus server at specified addr
 	http.Handle("/metrics", promhttp.Handler()) // /metrics endpoint for Prometheus
-	log.Println("Prometheus metrics available at /metrics)")
+	log.Printf("Prometheus metrics available at %v/metrics)", addr)
 	log.Fatal(http.ListenAndServe(addr, nil)) // Prometheus listens on port "addr"
 }

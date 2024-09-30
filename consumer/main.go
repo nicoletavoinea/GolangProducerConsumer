@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -11,12 +10,12 @@ import (
 )
 
 func main() {
-	db := functions.OpenDatabase()
-	functions.CreatePrometheusMetricsGeneral()
-	go functions.StartPrometheusServer(":2112")
 
-	time.Sleep(time.Duration(10) * time.Second)
+	db := functions.OpenDatabase()              //open database
+	functions.CreatePrometheusMetricsGeneral()  //initialize prometheus metrics
+	go functions.StartPrometheusServer(":2112") //start prometheus server
 
+	//configure http setup
 	router := mux.NewRouter()
 	router.HandleFunc("/task", functions.HandleTask).Methods("POST")
 
@@ -26,6 +25,6 @@ func main() {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 
-	functions.CloseDB(db)
+	functions.CloseDB(db) //close database
 
 }

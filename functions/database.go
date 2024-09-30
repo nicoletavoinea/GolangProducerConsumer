@@ -82,7 +82,7 @@ func UpdateTaskState(taskID int32, status StatusCode) (database.Task, error) {
 	return updatedTask, nil
 }
 
-func getNumberOfDoneTasks() float64 {
+func getNumberOfDoneTasks() float64 { //retrieve from database the number of tasks that are in the DONE state
 
 	doneTasks, err := Queries.GetNumberOfTasks(context.Background(), "DONE")
 	if err != nil {
@@ -92,7 +92,7 @@ func getNumberOfDoneTasks() float64 {
 	return float64(doneTasks)
 }
 
-func getNumberOfProcessingTasks() float64 {
+func getNumberOfProcessingTasks() float64 { //retrieve from database the number of tasks that are in the PROCESSING state
 	processingTasks, err := Queries.GetNumberOfTasks(context.Background(), "PROCESSING")
 	if err != nil {
 		log.Printf("Error getting the number of done tasks task: %v\n", err)
@@ -101,7 +101,7 @@ func getNumberOfProcessingTasks() float64 {
 	return float64(processingTasks)
 }
 
-func getNumberOfTasksByType() [10]int {
+func getNumberOfTasksByType() [10]int { //retrieve from database the number of tasks of each type
 	values := [10]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	rows, err := Queries.GetNumberOfTasksByType(context.Background())
@@ -117,7 +117,7 @@ func getNumberOfTasksByType() [10]int {
 	return values
 }
 
-func getValueOfTasksByType() [10]float64 {
+func getValueOfTasksByType() [10]float64 { //retrieve from database the sum of the values of each task type
 	values := [10]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	rows, err := Queries.GetValueOfTasksByType(context.Background())

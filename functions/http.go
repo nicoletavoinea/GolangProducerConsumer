@@ -30,7 +30,8 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error updating task to PROCESSING :(\n", err)
 	}
-	//IncreaseProcessedTasks()
+
+	//update metrics
 	IncreaseProcessedTasks()
 	log.Println("Task updated to: ", updatedTask)
 
