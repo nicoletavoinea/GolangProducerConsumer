@@ -1,4 +1,4 @@
-package functions
+package handler
 
 import (
 	"bytes"
@@ -7,10 +7,14 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
 )
 
 func HandleTask(w http.ResponseWriter, r *http.Request) {
-	var receivedTask task
+	var receivedTask definitions.Task
 
 	// Parse the JSON body
 	body, err := ioutil.ReadAll(r.Body)
@@ -26,24 +30,24 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received task: %v", receivedTask)
 
 	// Update task state to PROCESSING
-	updatedTask, err := UpdateTaskState(receivedTask.TaskId, PROCESSING)
+	updatedTask, err := database.UpdateTaskState(receivedTask.TaskId, definitions.PROCESSING)
 	if err != nil {
 		log.Println("Error updating task to PROCESSING :(\n", err)
 	}
 
 	//update metrics
-	IncreaseProcessedTasks()
+	metrics.IncreaseProcessedTasks()
 	log.Println("Task updated to: ", updatedTask)
 
 	//Sleep fot value miliseconds
 	time.Sleep(time.Duration(receivedTask.TaskValue) * time.Second) //should be miliseconds
 
 	// Update task state to DONE
-	updatedTask, err = UpdateTaskState(receivedTask.TaskId, DONE)
+	updatedTask, err = database.UpdateTaskState(receivedTask.TaskId, definitions.DONE)
 	if err != nil {
 		log.Println("Error updating task to DONE :(\n", err)
 	}
-	IncreaseDoneTasks()
+	metrics.IncreaseDoneTasks()
 	log.Println("Task updated to: ", updatedTask)
 
 	//Ok status
@@ -51,7 +55,7 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(receivedTask)
 }
 
-func SendTaskToConsumer(taskToSend task) error {
+func SendTaskToConsumer(taskToSend definitions.Task) error {
 	jsonTask, err := json.Marshal(taskToSend)
 	if err != nil {
 		return err
@@ -69,4 +73,26 @@ func SendTaskToConsumer(taskToSend task) error {
 	}
 	log.Printf("Task sent to consumer: %+v", taskToSend)
 	return nil
+}
+
+func ProcessAndSendTask() (definitions.Task, error) { //add to database -> increase metrics -> send to consumer
+	task := definitions.GenerateRandomTask()
+
+	// Add task to database
+	updatedTask, err := database.AddTaskToDatabase(task, database.Queries)
+	if err != nil {
+		return updatedTask, err
+	}
+	log.Println("Task added to db:", updatedTask)
+
+	//update metrics
+	metrics.IncreaseTotalTasksAndValue(task.TaskType, task.TaskValue)
+
+	// Send task to consumer
+	err = SendTaskToConsumer(updatedTask)
+	if err != nil {
+		return updatedTask, err
+	}
+	log.Println("Task sent to consumer:", updatedTask)
+	return updatedTask, nil
 }

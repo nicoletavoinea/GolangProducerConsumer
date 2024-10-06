@@ -1,4 +1,4 @@
-package functions
+package metrics
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -42,8 +43,8 @@ func CreatePrometheusMetricsGeneral() {
 	)
 
 	//set to initial values, computed from database
-	processed.Set(getNumberOfProcessingTasks())
-	done.Set(getNumberOfDoneTasks())
+	processed.Set(database.GetNumberOfProcessingTasks())
+	done.Set(database.GetNumberOfDoneTasks())
 
 	// Register the metrics with Prometheus
 	prometheus.MustRegister(processed)
@@ -72,12 +73,12 @@ func CreatePrometheusMetricsTypes() {
 		[]string{"type"},
 	)
 
-	totalNumbers := getNumberOfTasksByType()
+	totalNumbers := database.GetNumberOfTasksByType()
 	for i := 0; i < 10; i++ {
 		total.With(prometheus.Labels{"type": fmt.Sprintf("type %d", i)}).Add(float64(totalNumbers[i]))
 	}
 
-	totalValues := getValueOfTasksByType()
+	totalValues := database.GetValueOfTasksByType()
 	for i := 0; i < 10; i++ {
 		values.With(prometheus.Labels{"type": fmt.Sprintf("type %d", i)}).Add(float64(totalValues[i]))
 	}

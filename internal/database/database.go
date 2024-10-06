@@ -1,4 +1,4 @@
-package functions
+package database
 
 import (
 	"context"
@@ -8,10 +8,11 @@ import (
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
-	database "github.com/nicoletavoinea/GolangProducerConsumer/database/sqlc"
+	sqlc "github.com/nicoletavoinea/GolangProducerConsumer/internal/database/sqlc"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
 )
 
-var Queries *database.Queries
+var Queries *sqlc.Queries
 var Db *sql.DB
 var mutexAdd sync.Mutex
 
@@ -25,7 +26,7 @@ func OpenDatabase() *sql.DB {
 		log.Fatalf("Failed to run schema: %v", err)
 	}
 
-	Queries = database.New(db)
+	Queries = sqlc.New(db)
 	return db
 }
 
@@ -45,9 +46,9 @@ func CloseDB(db *sql.DB) {
 	}
 }
 
-func AddTaskToDatabase(task task, db *database.Queries) (task, error) {
+func AddTaskToDatabase(task definitions.Task, db *sqlc.Queries) (definitions.Task, error) {
 	mutexAdd.Lock()
-	taskData, err := db.AddTask(context.Background(), database.AddTaskParams{
+	taskData, err := db.AddTask(context.Background(), sqlc.AddTaskParams{
 		Param1: int64(task.TaskType),
 		Param2: int64(task.TaskValue),
 	})
@@ -63,15 +64,15 @@ func AddTaskToDatabase(task task, db *database.Queries) (task, error) {
 	return task, nil
 }
 
-func UpdateTaskState(taskID int32, status StatusCode) (database.Task, error) {
+func UpdateTaskState(taskID int32, status definitions.StatusCode) (sqlc.Task, error) {
 	state := ""
-	if status == PROCESSING {
+	if status == definitions.PROCESSING {
 		state = "PROCESSING"
-	} else if status == DONE {
+	} else if status == definitions.DONE {
 		state = "DONE"
 	}
 
-	updatedTask, err := Queries.UpdateTask(context.Background(), database.UpdateTaskParams{
+	updatedTask, err := Queries.UpdateTask(context.Background(), sqlc.UpdateTaskParams{
 		Param1: int64(taskID),
 		Param2: state,
 	})
@@ -82,7 +83,7 @@ func UpdateTaskState(taskID int32, status StatusCode) (database.Task, error) {
 	return updatedTask, nil
 }
 
-func getNumberOfDoneTasks() float64 { //retrieve from database the number of tasks that are in the DONE state
+func GetNumberOfDoneTasks() float64 { //retrieve from database the number of tasks that are in the DONE state
 
 	doneTasks, err := Queries.GetNumberOfTasks(context.Background(), "DONE")
 	if err != nil {
@@ -92,7 +93,7 @@ func getNumberOfDoneTasks() float64 { //retrieve from database the number of tas
 	return float64(doneTasks)
 }
 
-func getNumberOfProcessingTasks() float64 { //retrieve from database the number of tasks that are in the PROCESSING state
+func GetNumberOfProcessingTasks() float64 { //retrieve from database the number of tasks that are in the PROCESSING state
 	processingTasks, err := Queries.GetNumberOfTasks(context.Background(), "PROCESSING")
 	if err != nil {
 		log.Printf("Error getting the number of done tasks task: %v\n", err)
@@ -101,7 +102,7 @@ func getNumberOfProcessingTasks() float64 { //retrieve from database the number 
 	return float64(processingTasks)
 }
 
-func getNumberOfTasksByType() [10]int { //retrieve from database the number of tasks of each type
+func GetNumberOfTasksByType() [10]int { //retrieve from database the number of tasks of each type
 	values := [10]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	rows, err := Queries.GetNumberOfTasksByType(context.Background())
@@ -117,7 +118,7 @@ func getNumberOfTasksByType() [10]int { //retrieve from database the number of t
 	return values
 }
 
-func getValueOfTasksByType() [10]float64 { //retrieve from database the sum of the values of each task type
+func GetValueOfTasksByType() [10]float64 { //retrieve from database the sum of the values of each task type
 	values := [10]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	rows, err := Queries.GetValueOfTasksByType(context.Background())

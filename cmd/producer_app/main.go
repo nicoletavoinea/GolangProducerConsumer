@@ -5,18 +5,20 @@ import (
 	"sync"
 	"time"
 
-	functions "github.com/nicoletavoinea/GolangProducerConsumer/functions"
+	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
 )
 
-const msgRate = 5 //message sending rate (messages/second)
+const msgRate = 3 //message sending rate (messages/second)
 
 var wg sync.WaitGroup
 
 func main() {
 	//open database & get queries(global var)
-	db := functions.OpenDatabase()
-	functions.CreatePrometheusMetricsTypes()
-	go functions.StartPrometheusServer(":2113")
+	db := database.OpenDatabase()
+	metrics.CreatePrometheusMetricsTypes()
+	go metrics.StartPrometheusServer(":2113")
 
 	//10 s before starts generating tasks
 	time.Sleep(time.Duration(10) * time.Second)
@@ -34,13 +36,13 @@ func main() {
 		case <-ticker.C: // Triggers at msgRate per second
 			// Start a new goroutine for processing the task
 			go func() {
-				functions.ProcessAndSendTask()
+				handler.ProcessAndSendTask()
 			}()
 
 		case <-timeout: // Triggers after timeout elapses
-			ticker.Stop()         // Stop the ticker
-			wg.Wait()             //wait for all goroutines to finish
-			functions.CloseDB(db) //close database
+			ticker.Stop()        // Stop the ticker
+			wg.Wait()            //wait for all goroutines to finish
+			database.CloseDB(db) //close database
 
 		}
 	}
