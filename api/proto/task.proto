@@ -1,0 +1,36 @@
+//"C:\Program Files\protoc\bin\protoc.exe" --go_out=. --go-grpc_out=. task.proto
+
+syntax = "proto3";
+
+package proto;
+option go_package = "./task;proto";
+
+service TaskService {
+    rpc HandleTask (TaskRequest) returns (TaskResponse);
+    rpc ProcessAndSendTask (Empty) returns (TaskResponse);
+}
+
+enum TaskState {
+  RECEIVED = 0;
+  PROCESSING = 1;
+  DONE = 2;
+}
+
+message Task {
+    int32 task_id = 1;
+    int32 task_type = 2;
+    int32 task_value = 3;
+    TaskState task_state = 4; 
+    int64 task_creation_time = 5;
+    int64 task_last_update_time = 6;
+}
+
+message TaskRequest {
+    Task task = 1; 
+}
+
+message TaskResponse {
+    Task task = 1;
+}
+
+message Empty {}

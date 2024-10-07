@@ -76,7 +76,7 @@ func SendTaskToConsumer(taskToSend definitions.Task) error {
 }
 
 func ProcessAndSendTask() (definitions.Task, error) { //add to database -> increase metrics -> send to consumer
-	task := definitions.GenerateRandomTask()
+	task := definitions.GenerateRandomTaskPrev()
 
 	// Add task to database
 	updatedTask, err := database.AddTaskToDatabase(task, database.Queries)

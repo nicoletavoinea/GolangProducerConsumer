@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	//"log"
 	"sync"
@@ -48,3 +49,4 @@ func main() {
 	}
 
 }
+*/

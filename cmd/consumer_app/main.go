@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"log"
 	"net/http"
@@ -30,3 +31,4 @@ func main() {
 	database.CloseDB(db) //close database
 
 }
+*/

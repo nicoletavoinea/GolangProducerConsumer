@@ -107,7 +107,7 @@ func IncreaseDoneTasks() { //increment number of done tasks
 	mu1.Unlock()
 }
 
-func IncreaseTotalTasksAndValue(taskType int8, taskValue int8) { //increment number of tasks per task type & their values
+func IncreaseTotalTasksAndValue(taskType int32, taskValue int32) { //increment number of tasks per task type & their values
 	mu2.Lock()
 	myTypesMetrics.TotalTasks.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Inc()
 	myTypesMetrics.TotalValues.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Add(float64(taskValue))

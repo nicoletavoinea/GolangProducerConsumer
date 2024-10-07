@@ -17,12 +17,12 @@ var Db *sql.DB
 var mutexAdd sync.Mutex
 
 func OpenDatabase() *sql.DB {
-	db, err := sql.Open("sqlite3", "../database/tasks.db")
+	db, err := sql.Open("sqlite3", "../../internal/database/tasks.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := RunSchema(db, "../database/schema.sql"); err != nil {
+	if err := RunSchema(db, "../../internal/database/queries/schema.sql"); err != nil {
 		log.Fatalf("Failed to run schema: %v", err)
 	}
 
