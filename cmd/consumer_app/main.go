@@ -1,34 +1,30 @@
 package main
 
-/*
 import (
 	"log"
-	"net/http"
+	"net"
 
-	"github.com/gorilla/mux"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
+	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task" // proto package
+	"google.golang.org/grpc"
 )
 
 func main() {
-
-	db := database.OpenDatabase()             //open database
-	metrics.CreatePrometheusMetricsGeneral()  //initialize prometheus metrics
-	go metrics.StartPrometheusServer(":2112") //start prometheus server
-
-	//configure http setup
-	router := mux.NewRouter()
-	router.HandleFunc("/task", handler.HandleTask).Methods("POST")
-
-	log.Println("Starting the Task Consumer on :8081...")
-	err := http.ListenAndServe(":8081", router)
+	// Set up a listener on port 50051
+	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Fatalf("Failed to listen on port 50051: %v", err)
 	}
 
-	database.CloseDB(db) //close database
+	// Create a new gRPC server
+	grpcServer := grpc.NewServer()
 
+	// Register the TaskService server
+	proto.RegisterTaskServiceServer(grpcServer, &handler.TaskServiceServer{})
+
+	// Start serving
+	log.Println("gRPC server is running on port 50051...")
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalf("Failed to serve: %v", err)
+	}
 }
-*/

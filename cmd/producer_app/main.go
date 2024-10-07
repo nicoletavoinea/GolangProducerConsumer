@@ -1,52 +1,45 @@
 package main
 
-/*
 import (
-	//"log"
+	"log"
 	"sync"
 	"time"
 
 	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
+	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task" // Import your generated package
+	"google.golang.org/grpc"
 )
 
 const msgRate = 3 //message sending rate (messages/second)
-
 var wg sync.WaitGroup
 
 func main() {
-	//open database & get queries(global var)
-	db := database.OpenDatabase()
-	metrics.CreatePrometheusMetricsTypes()
-	go metrics.StartPrometheusServer(":2113")
+	// Connect to the gRPC server
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer conn.Close()
 
-	//10 s before starts generating tasks
-	time.Sleep(time.Duration(10) * time.Second)
+	client := proto.NewTaskServiceClient(conn)
 
 	//generate tasks for 75s
 	timeout := time.After(75 * time.Second)
 
-	//ticker that starts routines having msgRate/second
-	ticker := time.NewTicker(time.Second / msgRate)
-	defer ticker.Stop()
+	// Create a ticker that triggers every 500 milliseconds
+	ticker := time.NewTicker(1000 / msgRate * time.Millisecond)
+	defer ticker.Stop() // Stop the ticker when the program ends
 
-	//start generating & sending tasks
+	// Simulate sending a message every 500 milliseconds
 	for {
 		select {
-		case <-ticker.C: // Triggers at msgRate per second
-			// Start a new goroutine for processing the task
-			go func() {
-				handler.ProcessAndSendTask()
-			}()
+		case <-ticker.C: // Every time the ticker ticks, send a task
+			// Create a new task to send to the server
+			go handler.SendTask(client)
 
 		case <-timeout: // Triggers after timeout elapses
-			ticker.Stop()        // Stop the ticker
-			wg.Wait()            //wait for all goroutines to finish
-			database.CloseDB(db) //close database
-
+			ticker.Stop() // Stop the ticker
+			wg.Wait()
 		}
 	}
-
 }
-*/

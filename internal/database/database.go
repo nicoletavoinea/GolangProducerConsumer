@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
+	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task"
 	sqlc "github.com/nicoletavoinea/GolangProducerConsumer/internal/database/sqlc"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
 )
 
 var Queries *sqlc.Queries
@@ -46,7 +46,7 @@ func CloseDB(db *sql.DB) {
 	}
 }
 
-func AddTaskToDatabase(task definitions.Task, db *sqlc.Queries) (definitions.Task, error) {
+func AddTaskToDatabase(task proto.Task, db *sqlc.Queries) (proto.Task, error) {
 	mutexAdd.Lock()
 	taskData, err := db.AddTask(context.Background(), sqlc.AddTaskParams{
 		Param1: int64(task.TaskType),
@@ -64,11 +64,11 @@ func AddTaskToDatabase(task definitions.Task, db *sqlc.Queries) (definitions.Tas
 	return task, nil
 }
 
-func UpdateTaskState(taskID int32, status definitions.StatusCode) (sqlc.Task, error) {
+func UpdateTaskState(taskID int32, status proto.TaskState) (sqlc.Task, error) {
 	state := ""
-	if status == definitions.PROCESSING {
+	if status == proto.TaskState_PROCESSING {
 		state = "PROCESSING"
-	} else if status == definitions.DONE {
+	} else if status == proto.TaskState_DONE {
 		state = "DONE"
 	}
 
