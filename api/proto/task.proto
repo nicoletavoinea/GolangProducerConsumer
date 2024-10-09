@@ -7,7 +7,6 @@ option go_package = "./task;proto";
 
 service TaskService {
     rpc HandleTask (TaskRequest) returns (TaskResponse);
-    rpc ProcessAndSendTask (Empty) returns (TaskResponse);
 }
 
 enum TaskState {

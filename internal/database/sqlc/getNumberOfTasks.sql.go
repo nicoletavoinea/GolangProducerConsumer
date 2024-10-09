@@ -12,11 +12,11 @@ import (
 const getNumberOfTasks = `-- name: GetNumberOfTasks :one
 SELECT COUNT(*)
 FROM tasks
-WHERE state=?1
+WHERE state=$1::task_state
 `
 
-func (q *Queries) GetNumberOfTasks(ctx context.Context, param1 string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getNumberOfTasks, param1)
+func (q *Queries) GetNumberOfTasks(ctx context.Context, dollar_1 TaskState) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getNumberOfTasks, dollar_1)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

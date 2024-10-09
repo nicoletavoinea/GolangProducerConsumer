@@ -1,8 +1,8 @@
 -- name: UpdateTask :one
 UPDATE tasks
 SET 
-    state=:param2, 
-    lastupdatetime = strftime('%s','now')
+    state=$2::task_state, 
+    lastupdatetime = EXTRACT(EPOCH FROM NOW())
 WHERE 
-    id=:param1
+    id=$1
 RETURNING *;

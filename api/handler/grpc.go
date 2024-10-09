@@ -3,40 +3,37 @@ package handler
 import (
 	"context"
 	"log"
+	"time"
 
 	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
+	database "github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
+	sqlc "github.com/nicoletavoinea/GolangProducerConsumer/internal/database/sqlc"
+	definitions "github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
+	metrics "github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
 )
 
 type TaskServiceServer struct {
 	proto.UnimplementedTaskServiceServer // Required for forward compatibility
 }
 
-// HandleTask is the implementation of the HandleTask RPC method
 func (s *TaskServiceServer) HandleTask(ctx context.Context, req *proto.TaskRequest) (*proto.TaskResponse, error) {
 	task := req.GetTask()
+	log.Printf("Received: %v", task)
 
-	// Log or process the task
-	log.Printf("Received Task: %v", task)
+	//Update ststus in database to PROCESSING
+	database.UpdateTaskState(task.TaskId, proto.TaskState_PROCESSING)
 
-	// Simulate task processing
-	task.TaskState = proto.TaskState_PROCESSING
+	//update metrics
+	metrics.IncreaseProcessedTasks()
 
-	// Return a response with the updated task state
-	return &proto.TaskResponse{
-		Task: task,
-	}, nil
-}
+	// Simulate task processing by sleeping for a duration based on task value
+	time.Sleep(time.Duration(task.TaskValue) * time.Second)
 
-func (s *TaskServiceServer) ProcessAndSendTask(ctx context.Context, req *proto.Empty) (*proto.TaskResponse, error) {
-	// Simulate creating a new task
-	task := definitions.GenerateRandomTask()
+	//Update ststus in database to DONE
+	database.UpdateTaskState(task.TaskId, proto.TaskState_DONE)
 
-	// Log task creation
-	log.Println("Created Task:", task)
-
-	// Simulate sending task to consumer
-	task.TaskState = proto.TaskState_DONE
+	//update metrics
+	metrics.IncreaseDoneTasks()
 
 	// Return a response with the updated task state
 	return &proto.TaskResponse{
@@ -44,10 +41,21 @@ func (s *TaskServiceServer) ProcessAndSendTask(ctx context.Context, req *proto.E
 	}, nil
 }
 
-func SendTask(client proto.TaskServiceClient) {
+func AddToDatabaseAndSendTask(client proto.TaskServiceClient, queries *sqlc.Queries) {
+	//generate random task
 	task := definitions.GenerateRandomTask()
 
-	//response, err := client.HandleTask(context.Background(), &proto.TaskRequest{
+	//increase metrics
+	metrics.IncreaseTotalTasksAndValue(task.TaskType, task.TaskValue)
+
+	//add task to database
+	database.AddTaskToDatabase(task, queries)
+
+	//send task to consumer via grpc
+	SendTask(client, task)
+}
+
+func SendTask(client proto.TaskServiceClient, task *proto.Task) {
 	_, err := client.HandleTask(context.Background(), &proto.TaskRequest{
 		Task: task,
 	})
@@ -57,5 +65,4 @@ func SendTask(client proto.TaskServiceClient) {
 		return
 	}
 	log.Printf("Sent: %v", task)
-	//log.Printf("Response from server: %v", response.GetTask())
 }

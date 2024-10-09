@@ -11,21 +11,21 @@ import (
 
 const addTask = `-- name: AddTask :one
 INSERT INTO tasks (type, value,state,creationtime,lastupdatetime)
-VALUES (?1, ?2, 'RECEIVED',strftime('%s','now'),strftime('%s','now')) RETURNING id, creationtime
+VALUES ($1, $2, 'RECEIVED',EXTRACT(EPOCH FROM NOW()),EXTRACT(EPOCH FROM NOW())) RETURNING id, creationtime
 `
 
 type AddTaskParams struct {
-	Param1 int64
-	Param2 int64
+	Type  int32
+	Value int32
 }
 
 type AddTaskRow struct {
-	ID           int64
+	ID           int32
 	Creationtime int64
 }
 
 func (q *Queries) AddTask(ctx context.Context, arg AddTaskParams) (AddTaskRow, error) {
-	row := q.db.QueryRowContext(ctx, addTask, arg.Param1, arg.Param2)
+	row := q.db.QueryRowContext(ctx, addTask, arg.Type, arg.Value)
 	var i AddTaskRow
 	err := row.Scan(&i.ID, &i.Creationtime)
 	return i, err

@@ -12,20 +12,20 @@ import (
 const updateTask = `-- name: UpdateTask :one
 UPDATE tasks
 SET 
-    state=?1, 
-    lastupdatetime = strftime('%s','now')
+    state=$2::task_state, 
+    lastupdatetime = EXTRACT(EPOCH FROM NOW())
 WHERE 
-    id=?2
+    id=$1
 RETURNING id, type, value, state, creationtime, lastupdatetime
 `
 
 type UpdateTaskParams struct {
-	Param2 string
-	Param1 int64
+	ID      int32
+	Column2 TaskState
 }
 
 func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {
-	row := q.db.QueryRowContext(ctx, updateTask, arg.Param2, arg.Param1)
+	row := q.db.QueryRowContext(ctx, updateTask, arg.ID, arg.Column2)
 	var i Task
 	err := row.Scan(
 		&i.ID,

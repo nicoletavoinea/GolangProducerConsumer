@@ -16,7 +16,7 @@ GROUP BY type
 `
 
 type GetNumberOfTasksByTypeRow struct {
-	Type      int64
+	Type      int32
 	TaskCount int64
 }
 

@@ -1,0 +1,1 @@
+CREATE TYPE task_state AS ENUM ('RECEIVED', 'PROCESSING', 'DONE');

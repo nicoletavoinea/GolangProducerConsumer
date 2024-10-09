@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 )
 
 const getValueOfTasksByType = `-- name: GetValueOfTasksByType :many
@@ -17,8 +16,8 @@ GROUP BY type
 `
 
 type GetValueOfTasksByTypeRow struct {
-	Type      int64
-	ValuesSum sql.NullFloat64
+	Type      int32
+	ValuesSum int64
 }
 
 func (q *Queries) GetValueOfTasksByType(ctx context.Context) ([]GetValueOfTasksByTypeRow, error) {
