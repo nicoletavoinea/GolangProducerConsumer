@@ -9,6 +9,7 @@ import (
 	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
 	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task" // Import your generated package
 	database "github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
 	metrics "github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
 
 	"google.golang.org/grpc"
@@ -17,7 +18,13 @@ import (
 const msgRate = 3 //message sending rate (messages/second)
 var wg sync.WaitGroup
 
+var (
+	version = "0.0.0"
+)
+
 func main() {
+	definitions.Version_handling(version)
+
 	//open database
 	myDatabase := database.OpenDatabase()
 

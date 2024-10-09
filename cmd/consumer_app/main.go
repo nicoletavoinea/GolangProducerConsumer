@@ -8,12 +8,19 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
 	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task" // proto package
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
-	"github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
+	database "github.com/nicoletavoinea/GolangProducerConsumer/internal/database"
+	"github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
+	metrics "github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
 	"google.golang.org/grpc"
 )
 
+var (
+	version = "0.0.0"
+)
+
 func main() {
+	definitions.Version_handling(version)
+
 	//open database
 	myDatabase := database.OpenDatabase()
 

@@ -16,7 +16,8 @@ var myTypesMetrics PrometheusMetricsTypes
 
 var mu sync.Mutex
 var mu1 sync.Mutex
-var mu2 sync.Mutex
+
+//var mu2 sync.Mutex
 
 type PrometheusMetricsGeneral struct {
 	ProcessedTasks prometheus.Gauge
@@ -59,7 +60,6 @@ func CreatePrometheusMetricsGeneral() {
 }
 
 func CreatePrometheusMetricsTypes() {
-	log.Println("aici???")
 	total := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "total_tasks",
@@ -75,13 +75,10 @@ func CreatePrometheusMetricsTypes() {
 		},
 		[]string{"type"},
 	)
-	log.Println("Inainte sa intru")
 	totalNumbers := database.GetNumberOfTasksByType()
-	log.Println("Gata cu databaseul??")
 	for i := 0; i < 10; i++ {
 		total.With(prometheus.Labels{"type": fmt.Sprintf("type %d", i)}).Add(float64(totalNumbers[i]))
 	}
-	log.Println("Dupa primul loop")
 
 	totalValues := database.GetValueOfTasksByType()
 	for i := 0; i < 10; i++ {
@@ -95,8 +92,6 @@ func CreatePrometheusMetricsTypes() {
 		TotalTasks:  total,
 		TotalValues: values,
 	}
-
-	log.Println("This is done")
 }
 
 func IncreaseProcessedTasks() { //increment number of processing tasks
@@ -115,11 +110,10 @@ func IncreaseDoneTasks() { //increment number of done tasks
 }
 
 func IncreaseTotalTasksAndValue(taskType int32, taskValue int32) { //increment number of tasks per task type & their values
-	mu2.Lock()
-
+	//mu2.Lock()
 	myTypesMetrics.TotalTasks.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Inc()
 	myTypesMetrics.TotalValues.With(prometheus.Labels{"type": fmt.Sprintf("type %d", taskType)}).Add(float64(taskValue))
-	mu2.Unlock()
+	//mu2.Unlock()
 }
 
 func StartPrometheusServer(addr string) { //startprometheus server at specified addr
