@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	//"sync"
-
 	proto "github.com/nicoletavoinea/GolangProducerConsumer/api/proto/task"
 	sqlc "github.com/nicoletavoinea/GolangProducerConsumer/internal/database/sqlc"
+	zl "github.com/rs/zerolog/log"
 )
 
 var Queries *sqlc.Queries
@@ -34,11 +34,11 @@ func OpenDatabase() *sql.DB {
 		log.Fatalf("Failed to open postgres database: %v", err)
 	}
 
-	if err := CreateType(db, "../internal/database/queries/createType.sql"); err != nil {
+	if err := CreateType(db, "../../internal/database/queries/createType.sql"); err != nil {
 		log.Fatalf("Error in CreateType file: %v", err)
 	}
 
-	if err := RunSchema(db, "../internal/database/queries/schema.sql"); err != nil {
+	if err := RunSchema(db, "../../internal/database/queries/schema.sql"); err != nil {
 		log.Fatalf("Failed to run schema: %v", err)
 	}
 
@@ -98,7 +98,8 @@ func AddTaskToDatabase(task *proto.Task, db *sqlc.Queries) error {
 	task.TaskId = taskData.ID
 	task.TaskCreationTime = taskData.Creationtime
 	task.TaskLastUpdateTime = task.TaskCreationTime
-	log.Printf("Added: %v\n", task)
+	//log.Printf("Added: %v\n", task)
+	zl.Info().Int32("TaskId", task.TaskId).Int32("TaskType", task.TaskType).Int32("TaskValue", task.TaskValue).Str("State", string(sqlc.TaskStateRECEIVED)).Msg("Added to database by producer")
 	return nil
 }
 
@@ -118,7 +119,8 @@ func UpdateTaskState(taskID int32, status proto.TaskState) (sqlc.Task, error) {
 		log.Printf("Error updating task: %v\n", err)
 		return updatedTask, err
 	}
-	log.Printf("Updated: %v\n", updatedTask)
+	//log.Printf("Updated: %v\n", updatedTask)
+	zl.Info().Int32("TaskId", updatedTask.ID).Int32("TaskType", updatedTask.Type).Int32("TaskValue", updatedTask.Value).Str("State", string(updatedTask.State)).Msg("Database updated by consumer")
 	return updatedTask, nil
 }
 
@@ -143,13 +145,11 @@ func GetNumberOfProcessingTasks() float64 { //retrieve from database the number 
 
 func GetNumberOfTasksByType() [10]int { //retrieve from database the number of tasks of each type
 	values := [10]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	log.Println("Aici 2")
 	rows, err := Queries.GetNumberOfTasksByType(context.Background())
 	if err != nil {
 		log.Printf("Error getting the number of tasks by type: %v\n", err)
 		return values
 	}
-	log.Println("Aici 3")
 	for i := 0; i < len(rows); i++ {
 		values[rows[i].Type] = int(rows[i].TaskCount)
 	}
@@ -159,13 +159,11 @@ func GetNumberOfTasksByType() [10]int { //retrieve from database the number of t
 
 func GetValueOfTasksByType() [10]int64 { //retrieve from database the sum of the values of each task type
 	values := [10]int64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	log.Println("Aici 1")
 	rows, err := Queries.GetValueOfTasksByType(context.Background())
 	if err != nil {
 		log.Printf("Error getting the value of tasks by type: %v\n", err)
 		return values
 	}
-	log.Println("Aici 4")
 	for i := 0; i < len(rows); i++ {
 		values[rows[i].Type] = rows[i].ValuesSum
 	}

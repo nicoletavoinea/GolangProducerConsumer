@@ -10,6 +10,7 @@ import (
 	sqlc "github.com/nicoletavoinea/GolangProducerConsumer/internal/database/sqlc"
 	definitions "github.com/nicoletavoinea/GolangProducerConsumer/internal/definitions"
 	metrics "github.com/nicoletavoinea/GolangProducerConsumer/internal/metrics"
+	zl "github.com/rs/zerolog/log"
 )
 
 type TaskServiceServer struct {
@@ -18,7 +19,8 @@ type TaskServiceServer struct {
 
 func (s *TaskServiceServer) HandleTask(ctx context.Context, req *proto.TaskRequest) (*proto.TaskResponse, error) {
 	task := req.GetTask()
-	log.Printf("Received: %v", task)
+	//log.Printf("Received: %v", task)
+	zl.Info().Int32("TaskId", task.TaskId).Int32("TaskType", task.TaskType).Int32("TaskValue", task.TaskValue).Str("State", string(task.TaskState)).Msg("Received by consumer")
 
 	//Update ststus in database to PROCESSING
 	database.UpdateTaskState(task.TaskId, proto.TaskState_PROCESSING)
@@ -64,5 +66,6 @@ func SendTask(client proto.TaskServiceClient, task *proto.Task) {
 		log.Printf("Failed to call HandleTask: %v", err)
 		return
 	}
-	log.Printf("Sent: %v", task)
+	//log.Printf("Sent: %v", task)
+	zl.Info().Int32("TaskId", task.TaskId).Int32("TaskType", task.TaskType).Int32("TaskValue", task.TaskValue).Str("State", string(sqlc.TaskStateRECEIVED)).Msg("Sent by producer")
 }

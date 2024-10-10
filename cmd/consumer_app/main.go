@@ -18,6 +18,7 @@ var (
 )
 
 func main() {
+	//handling version changing
 	definitions.Version_handling(version)
 
 	//open database
