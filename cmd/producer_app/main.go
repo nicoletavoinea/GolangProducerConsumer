@@ -32,6 +32,8 @@ func main() {
 	metrics.CreatePrometheusMetricsTypes()    //initialize prometheus metrics
 	go metrics.StartPrometheusServer(":2113") //start prometheus server
 
+	time.Sleep(time.Duration(30 * time.Second))
+
 	// Connect to the gRPC server
 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {

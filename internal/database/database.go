@@ -34,11 +34,11 @@ func OpenDatabase() *sql.DB {
 		log.Fatalf("Failed to open postgres database: %v", err)
 	}
 
-	if err := CreateType(db, "../../internal/database/queries/createType.sql"); err != nil {
+	if err := CreateType(db, "../internal/database/queries/createType.sql"); err != nil {
 		log.Fatalf("Error in CreateType file: %v", err)
 	}
 
-	if err := RunSchema(db, "../../internal/database/queries/schema.sql"); err != nil {
+	if err := RunSchema(db, "../internal/database/queries/schema.sql"); err != nil {
 		log.Fatalf("Failed to run schema: %v", err)
 	}
 

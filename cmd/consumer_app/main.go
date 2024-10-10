@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/nicoletavoinea/GolangProducerConsumer/api/handler"
@@ -28,7 +27,7 @@ func main() {
 	metrics.CreatePrometheusMetricsGeneral()  //initialize prometheus metrics
 	go metrics.StartPrometheusServer(":2112") //start prometheus server
 
-	time.Sleep(time.Duration(10 * time.Second))
+	//time.Sleep(time.Duration(30 * time.Second))
 
 	// Set up a listener on port 50051
 	listener, err := net.Listen("tcp", ":50051")
